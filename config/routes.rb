@@ -1,6 +1,17 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  devise_for :users,
+             controllers: {
+               sessions: 'sessions'
+             }
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  # APIのベースURL
+  namespace :api do
+    namespace :v1 do
+      # ログイン用エンドポイント
+      devise_scope :user do
+        post 'login', to: 'sessions#create'
+        delete 'logout', to: 'sessions#destroy'
+      end
+    end
+  end
 end
