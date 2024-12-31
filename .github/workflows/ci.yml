@@ -24,17 +24,18 @@ jobs:
         with:
           ruby-version: 3.1.3
 
-      # MySQL サーバーのインストールとセットアップ
-      - name: Install MySQL
+      # MySQL のセットアップと構成
+      - name: Set up MySQL
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
           sudo systemctl start mysql
+          # MySQL root ユーザーの認証設定を変更
           sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';"
           sudo mysql -e "FLUSH PRIVILEGES;"
 
-      # データベース作成とマイグレーション
-      - name: Configure and Setup Database
+      # Rails データベース構成とセットアップ
+      - name: Configure Database
         run: |
           cp config/database.yml.ci config/database.yml
           bundle exec rails db:create
@@ -44,6 +45,6 @@ jobs:
       - name: Run Tests
         run: bundle exec rails test
 
-      # Lint チェック
-      - name: RuboCop
+      # RuboCop を使用したコードチェック
+      - name: Run RuboCop
         run: bundle exec rubocop
