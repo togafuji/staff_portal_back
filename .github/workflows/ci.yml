@@ -15,15 +15,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # Ruby をセットアップ（例えば 3.2.x）
+      # Ruby をセットアップ
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.3
-
-      # データベース（PostgreSQLなど）をセットアップ（不要なら削除）
-      - name: Configure DB
-        run: sudo service postgresql start
 
       # キャッシュを活用（bundle installの高速化）
       - name: Bundle cache
@@ -33,16 +29,21 @@ jobs:
           key: ${{ runner.os }}-bundle-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: ${{ runner.os }}-bundle-
 
-      # gem のインストール
+      # Bundler & gems のインストール
       - name: Install gems
-        run: bundle install --jobs 4 --path vendor/bundle
+        run: |
+          gem install bundler
+          bundle install
 
       # DB作成・マイグレーション（RDBを使う場合）
-      - name: Setup DB
-        run: |
-          cat config/database.yml
-          rails db:create
-          rails db:migrate
+      - name: Show database.yml
+        run: cat config/database.yml
+
+      - name: Create DB
+        run: bundle exec rails db:create
+
+      - name: Migrate DB
+        run: bundle exec rails db:migrate
 
       # RSpecなどでテストを実行
       - name: Run tests
