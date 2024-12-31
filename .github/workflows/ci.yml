@@ -52,11 +52,11 @@ jobs:
       - name: Output config/database.yml
         run: cat config/database.yml
 
-      - name: Verify MySQL is listening
-        run: nc -zv localhost 3306
+      - name: Build Docker image without cache
+        run: docker-compose build --no-cache
 
-      - name: Output environment variables
-        run: env
+      - name: Database setup
+        run: bundle exec rails db:setup
 
       - name: Database setup
         run: bundle exec rails db:setup

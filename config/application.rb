@@ -2,6 +2,9 @@ require_relative "boot"
 
 require "rails/all"
 
+if ENV['CI']
+  require_relative "../config/environments/ci.rb"
+end
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
