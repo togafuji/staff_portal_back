@@ -31,8 +31,8 @@ jobs:
           sudo mkdir -p /var/run/mysqld
           sudo chown mysql:mysql /var/run/mysqld
           sudo systemctl start mysql
-          sudo mysqladmin -u root password "${{ secrets.MYSQL_PASSWORD }}"
-          sudo mysql --socket=/var/run/mysqld/mysqld.sock -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
+          sudo mysql --socket=/opt/homebrew/var/mysql/mysql.sock -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
+          sudo mysql --socket=/opt/homebrew/var/mysql/mysql.sock -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # Rubyのセットアップ
       - name: Set up Ruby
