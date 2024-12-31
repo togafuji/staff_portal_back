@@ -7,6 +7,7 @@ on:
     branches: [ "main", "develop" ]
 
 env:
+  RAILS_ENV: test
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
 
 jobs:
@@ -14,17 +15,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # リポジトリをチェックアウト
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # Ruby をセットアップ
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.3
 
-      # キャッシュを活用（bundle installの高速化）
       - name: Bundle cache
         uses: actions/cache@v3
         with:
@@ -32,28 +30,23 @@ jobs:
           key: ${{ runner.os }}-bundle-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: ${{ runner.os }}-bundle-
 
-      # Bundler & gems のインストール
       - name: Install gems
         run: |
           gem install bundler
           bundle install
 
-      # DB作成・マイグレーション（RDBを使う場合）
-      - name: Show database.yml
+      - name: Check database.yml
         run: cat config/database.yml
 
-      - name: Create DB
-        run: bundle exec rails db:create
+      - name: Prepare Database
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
 
-      - name: Migrate DB
-        run: bundle exec rails db:migrate
-
-      # RSpecなどでテストを実行
       - name: Run tests
         run: |
           bundle exec rails test   # Minitest
           # bundle exec rspec      # RSpecの場合
 
-      # Lint / Style Check（Rubocopなど）
       - name: RuboCop
         run: bundle exec rubocop
