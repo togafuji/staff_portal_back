@@ -56,6 +56,11 @@ jobs:
       - name: Build Docker image without cache
         run: docker-compose build --no-cache
 
+      - name: Look for database url
+        run:  echo $DATABASE_URL
+      - name: Output initializer files
+        run:  ls config/initializers && cat config/initializers/*
+
       - name: Database setup
         env:
           DATABASE_HOST: localhost
