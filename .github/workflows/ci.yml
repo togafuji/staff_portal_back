@@ -31,14 +31,12 @@ jobs:
           sudo rm -rf /var/lib/apt/lists/*
           
           # リポジトリの追加
-          wget https://dev.mysql.com/downloads/repo/apt/mysql-apt-config_0.8.28-1_all.deb
-          sudo dpkg -i mysql-apt-config_0.8.28-1_all.deb
+          wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
+          sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C
-
-          
+         
           # リポジトリURLをhttpsで指定
           sudo sed -i 's|http://repo.mysql.com/apt/ubuntu|https://repo.mysql.com/apt/ubuntu|g' /etc/apt/sources.list.d/mysql.list
-            
           
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
