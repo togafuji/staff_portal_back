@@ -31,6 +31,14 @@ jobs:
           sudo systemctl start mysql
           sleep 10 # MySQL起動完了を待機
 
+          # MySQL設定ファイルの編集
+          sudo sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
+          sudo sed -i 's/#default-authentication-plugin=mysql_native_password/default-authentication-plugin=mysql_native_password/' /etc/mysql/my.cnf
+
+          # MySQL再起動
+          sudo systemctl restart mysql
+          sleep 10
+
           # MySQLの初期設定
           sudo mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root'; FLUSH PRIVILEGES;"
           sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
@@ -39,6 +47,7 @@ jobs:
 
           # パスワードなしで接続できるか確認
           sudo -u root -E mysql -u root -e "SELECT 1;"
+          # パスワードありで接続できるか確認
           sudo -u root -E mysql -h localhost -u root -p"$MYSQL_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
         env:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
