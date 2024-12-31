@@ -27,12 +27,18 @@ jobs:
           # リポジトリ設定の削除
           sudo rm -f /etc/apt/sources.list.d/mysql.list
           
-           # 署名鍵の追加 (gpgを使用)
-          wget https://repo.mysql.com/RPM-GPG-KEY-mysql-2022 -O mysql.asc
-          sudo gpg --dearmor -o /usr/share/keyrings/mysql.gpg mysql.asc
+          # キャッシュの削除
+          sudo rm -rf /var/lib/apt/lists/*
           
-          # リポジトリ設定の手動追加
-          echo "deb [signed-by=/usr/share/keyrings/mysql.gpg] https://repo.mysql.com/apt/ubuntu/ jammy mysql-8.0" | sudo tee /etc/apt/sources.list.d/mysql.list
+          # リポジトリの追加
+          wget https://dev.mysql.com/downloads/repo/apt/mysql-apt-config_0.8.28-1_all.deb
+          sudo dpkg -i mysql-apt-config_0.8.28-1_all.deb
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C
+
+          
+          # リポジトリURLをhttpsで指定
+          sudo sed -i 's|http://repo.mysql.com/apt/ubuntu|https://repo.mysql.com/apt/ubuntu|g' /etc/apt/sources.list.d/mysql.list
+            
           
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
