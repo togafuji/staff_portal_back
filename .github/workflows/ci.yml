@@ -44,7 +44,7 @@ jobs:
           sudo mysqld_safe --skip-grant-tables &
           sleep 5
 
-          mysql -u root -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
+          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
 
           sudo killall mysqld
           sudo systemctl start mysql
