@@ -29,8 +29,7 @@ jobs:
       - name: MySQL setup and start
         run: |
           sudo systemctl start mysql
-          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
+          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock${{ secrets.MYSQL_PASSWORD }}
 
       # Rubyのセットアップ
       - name: Set up Ruby
