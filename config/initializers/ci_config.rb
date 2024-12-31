@@ -1,5 +1,6 @@
-# if ENV['CI']
-#   puts "Loading ci_config.rb" # イニシャライザが実行されていることを確認する
-#   require_relative "../environments/ci.rb"
-#   binding.irb # ブレークポイント
-# end
+if ENV['CI']
+  Rails.application.config.after_initialize do
+      puts "Loading ci.rb config through after_initialize"
+      require_relative "../environments/ci.rb"
+   end
+end

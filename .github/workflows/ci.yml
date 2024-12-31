@@ -58,8 +58,8 @@ jobs:
 
       - name: Database setup
         env:
-           DATABASE_HOST: localhost
-           CI: true
+          DATABASE_HOST: localhost
+          CI: true
         run: bundle exec rails db:setup
 
       - name: Run tests
