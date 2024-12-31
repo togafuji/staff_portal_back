@@ -28,15 +28,9 @@ jobs:
           sudo chown mysql:mysql /opt/homebrew/var/mysql
           sudo systemctl start mysql
 
-      # MySQLの設定とテスト用データベースの作成
+      # MySQLのセットアップとテスト用データベースの作成
       - name: Configure MySQL
         run: |
-          sudo systemctl stop mysql
-          sudo mysqld_safe --skip-grant-tables --socket=/opt/homebrew/var/mysql/mysql.sock &
-          sleep 5
-          mysql -u root --socket=/opt/homebrew/var/mysql/mysql.sock -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
-          sudo killall mysqld
-          sudo systemctl start mysql
           mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # Rubyのセットアップ
