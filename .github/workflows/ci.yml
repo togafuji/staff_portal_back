@@ -55,11 +55,8 @@ jobs:
       - name: Test credentials decryption
         run: EDITOR="cat" bin/rails credentials:edit
 
-      - name: Output database.yml content
+      - name: Verify database.yml in CI
         run: cat config/database.yml
-
-      - name: Output docker-compose.yml content
-        run: cat docker-compose.yml
 
       - name: Inspect containers and networks
         run: |

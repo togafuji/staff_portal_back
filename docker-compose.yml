@@ -3,31 +3,18 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: your_mysql_password  # Replace with your password
       MYSQL_DATABASE: staff_portal_back_test
     ports:
-      - "3306:3306"
-    healthcheck:
-      test: mysqladmin ping -h localhost
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
+      - "3307:3306"
 
-  web: # Railsアプリケーションのサービス名
+  web:
     build: .
     ports:
-      - "3000:3000"
+      - "3010:3010"
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     environment:
-      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      RAILS_MASTER_KEY: your_master_key # Replace with your key
+      MYSQL_PASSWORD: your_mysql_password # Replace with your password
+    command: bash -c "bundle exec rails db:setup && tail -f log/development.log"
