@@ -31,28 +31,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
 
-      # 必要なディレクトリを作成
-      - name: Create MySQL run directory
-        run: |
-          sudo mkdir -p /var/run/mysqld
-          sudo chown mysql:mysql /var/run/mysqld
-
-      # MySQLをセーフモードで起動してrootパスワードをリセット
+          - name: Install MySQL
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y mysql-server mysql-client
+            sudo systemctl start mysql
+  
       - name: Configure MySQL
         run: |
           sudo systemctl stop mysql
           sudo mysqld_safe --skip-grant-tables &
           sleep 5
-
-          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
-
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock
           sudo killall mysqld
           sudo systemctl start mysql
 
-      # テスト用データベースを作成
-      - name: Create test database
+      - name: Create database
         run: |
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # キャッシュを活用（bundle installの高速化）
       - name: Bundle cache
