@@ -49,15 +49,11 @@ jobs:
           fi
           echo "RAILS_MASTER_KEY length is valid."
 
-      - name: Output credentials.yml.enc content
-        run: cat config/credentials.yml.enc
-
-      - name: Test credentials decryption
-        run: EDITOR="cat" bin/rails credentials:edit
+      - name: Output config/database.yml
+        run: cat config/database.yml
 
       - name: Database setup
         run: bundle exec rails db:setup
-
 
       - name: Run tests
         run: bundle exec rails test
