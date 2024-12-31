@@ -24,20 +24,44 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Check out repository
+        uses: actions/checkout@v3
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.3
+
       - name: Install gems
         run: |
           gem install bundler
-          bundle config set --local without 'development'  # production gems only
+          bundle config set --local without 'development'
           bundle install
+
+      - name: Validate Rails Master Key
+        run: |
+          if [[ $(echo -n "$RAILS_MASTER_KEY" | wc -c) -ne 32 ]]; then
+            echo "Error: RAILS_MASTER_KEY must be 32 characters (16 bytes) long."
+            exit 1
+          fi
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+
       - name: Database setup
         run: |
           bundle exec rails db:setup
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+
       - name: Run tests
         run: bundle exec rails test
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+
       - name: RuboCop
         run: bundle exec rubocop
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
