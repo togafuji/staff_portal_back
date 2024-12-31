@@ -49,12 +49,12 @@ jobs:
           fi
           echo "RAILS_MASTER_KEY length is valid."
 
-      - name: Output config/database.yml
-        run: cat config/database.yml
-
+      - name: Install docker-compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-composeatabase.yml
       - name: Build Docker image without cache
         run: docker-compose build --no-cache
-
       - name: Database setup
         run: bundle exec rails db:setup
 
