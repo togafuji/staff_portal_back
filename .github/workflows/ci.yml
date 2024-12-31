@@ -49,7 +49,11 @@ jobs:
           fi
           echo "RAILS_MASTER_KEY length is valid."
 
-      # Removed the debug step as the validation should suffice
+      - name: Output credentials.yml.enc content
+        run: cat config/credentials.yml.enc
+
+      - name: Test credentials decryption
+        run: EDITOR="cat" bin/rails credentials:edit
 
       - name: Database setup
         run: bundle exec rails db:setup
