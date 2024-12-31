@@ -7,8 +7,9 @@ class Api::V1::SessionsController < Devise::SessionsController
   def respond_with(resource, _opts = {})
     render json: {
       token: current_token,
-      username: resource.username
-      # userIcon: resource.user_icon_url # ユーザーのアイコンURL
+      username: resource.username,
+      # userIcon: resource.user_icon_url, # UserモデルのユーザーアイコンURL属性に応じて修正
+      userId: resource.id # ユーザーIDを追加
     }, status: :ok
   end
 
