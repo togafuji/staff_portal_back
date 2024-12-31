@@ -55,20 +55,6 @@ jobs:
       - name: Test credentials decryption
         run: EDITOR="cat" bin/rails credentials:edit
 
-      - name: Verify database.yml in CI
-        run: cat config/database.yml
-
-      - name: Inspect containers and networks
-        run: |
-          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}"
-          docker network ls
-
-      - name: Test MySQL connection
-        run: |
-          host mysql
-          ping -c 3 mysql
-          nc -zv mysql 330
-
       - name: Database setup
         run: bundle exec rails db:setup
 
