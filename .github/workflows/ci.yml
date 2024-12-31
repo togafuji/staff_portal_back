@@ -20,36 +20,33 @@ jobs:
         uses: actions/checkout@v3
 
       # 必要なパッケージのインストール
-      - name: Install MySQL
+      - name: Install MySQL 8.0
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-server mysql-client-5.7
+          wget https://dev.mysql.com/get/mysql-apt-config_0.8.28-1_all.deb
+          sudo dpkg -i mysql-apt-config_0.8.28-1_all.deb
+          sudo apt-get update
+          sudo apt-get install -y mysql-server mysql-client
 
       # MySQLサーバーの設定と起動
-      - name: Start and configure MySQL
+      - name: Start and configure MySQL 8.0
         run: |
           sudo systemctl start mysql
           sleep 10 # MySQL起動完了を待機
 
           # MySQL設定ファイルの編集
           if [ -f /etc/mysql/my.cnf ]; then
-            sudo sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
-            sudo sed -i 's/#default-authentication-plugin=mysql_native_password/default-authentication-plugin=mysql_native_password/' /etc/mysql/my.cnf
+              sudo sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
+              sudo sed -i 's/#default-authentication-plugin=mysql_native_password/default-authentication-plugin=mysql_native_password/' /etc/mysql/my.cnf
           fi
-
-          # MySQL データディレクトリの初期化
-          sudo systemctl stop mysql
-          sudo rm -rf /var/lib/mysql
-          sudo mysql_install_db --user=mysql --ldata=/var/lib/mysql
-
+          
           # MySQL再起動
-          sudo systemctl start mysql
+          sudo systemctl restart mysql
           sleep 10
 
           # MySQLの初期設定
-          sudo mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root'; FLUSH PRIVILEGES;"
-          sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
-          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+           sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+           sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
           sleep 10
           echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
 
