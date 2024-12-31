@@ -25,11 +25,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
 
-      # MySQLサーバーのセットアップとパスワード設定
-      - name: MySQL setup and start
+      # MySQLサーバーの設定
+      - name: Configure MySQL
         run: |
+          sudo mkdir -p /var/run/mysqld
+          sudo chown mysql:mysql /var/run/mysqld
           sudo systemctl start mysql
-          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock -p${{ secrets.MYSQL_PASSWORD }}
+          sudo mysqladmin -u root password "${{ secrets.MYSQL_PASSWORD }}"
+          sudo mysql --socket=/var/run/mysqld/mysqld.sock -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # Rubyのセットアップ
       - name: Set up Ruby
