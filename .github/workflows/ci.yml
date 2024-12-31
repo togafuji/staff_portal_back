@@ -35,14 +35,6 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Check database.yml
-        run: cat config/database.yml
-
-      - name: Prepare Database
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:migrate
-
       - name: Run tests
         run: |
           bundle exec rails test   # Minitest
