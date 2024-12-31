@@ -8,7 +8,7 @@ on:
 
 env:
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-  MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} # MySQLのパスワードをGitHub Secretsに設定
 
 jobs:
   build-and-test:
@@ -25,26 +25,57 @@ jobs:
         with:
           ruby-version: 3.1.3
 
-      # MySQL のセットアップ
-      - name: Set up MySQL
+      # MySQL サーバーをセットアップ
+      - name: Install MySQL server
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
-          sudo systemctl start mysql
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ secrets.MYSQL_ROOT_PASSWORD }}';"
-          sudo mysql -e "FLUSH PRIVILEGES;"
 
-      # Rails データベース設定
-      - name: Configure Database
+      # MySQL サーバーをソケット経由で起動・設定
+      - name: Configure MySQL
         run: |
-          cp config/database.yml.ci config/database.yml
+          sudo mkdir -p /opt/homebrew/var/mysql
+          sudo systemctl start mysql
+          sudo mysql --socket=/opt/homebrew/var/mysql/mysql.sock -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
+          sudo mysql --socket=/opt/homebrew/var/mysql/mysql.sock -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
+
+      # キャッシュを活用（bundle installの高速化）
+      - name: Bundle cache
+        uses: actions/cache@v3
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-bundle-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: ${{ runner.os }}-bundle-
+
+      # Bundler & gems のインストール
+      - name: Install gems
+        run: |
+          gem install bundler
+          bundle install
+
+      # DB作成・マイグレーション（RDBを使う場合）
+      - name: Create DB
+        env:
+          MYSQL_SOCKET: /opt/homebrew/var/mysql/mysql.sock
+        run: |
+          export DATABASE_URL="mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_test?socket=/opt/homebrew/var/mysql/mysql.sock"
           bundle exec rails db:create
+
+      - name: Migrate DB
+        env:
+          MYSQL_SOCKET: /opt/homebrew/var/mysql/mysql.sock
+        run: |
+          export DATABASE_URL="mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_test?socket=/opt/homebrew/var/mysql/mysql.sock"
           bundle exec rails db:migrate
 
       # テストの実行
-      - name: Run Tests
-        run: bundle exec rails test
+      - name: Run tests
+        env:
+          MYSQL_SOCKET: /opt/homebrew/var/mysql/mysql.sock
+        run: |
+          export DATABASE_URL="mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_test?socket=/opt/homebrew/var/mysql/mysql.sock"
+          bundle exec rails test
 
-      # コードチェック
+      # Lint / Style Check（Rubocopなど）
       - name: RuboCop
         run: bundle exec rubocop
