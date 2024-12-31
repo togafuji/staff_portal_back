@@ -32,15 +32,15 @@ jobs:
           sudo apt-get install -y mysql-server mysql-client
 
       # MySQL サーバーの初期設定と起動
-      - name: Start MySQL service
+      - name: Start and configure MySQL
         run: |
+          # MySQLを起動
           sudo systemctl start mysql
-          sudo systemctl status mysql
 
-      # MySQL root パスワードの設定とデータベース作成
-      - name: Configure MySQL
-        run: |
-          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
+          # rootパスワードをリセット
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
+
+          # テスト用データベースを作成
           sudo mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # キャッシュを活用（bundle installの高速化）
