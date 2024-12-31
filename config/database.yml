@@ -18,6 +18,7 @@ default: &default
   host: <%= ENV['DATABASE_HOST'] || "localhost" %>
   port: 3306
   # socket: /opt/homebrew/var/mysql/mysql.sock
+  protocol: tcp # explicitly use tcp protocol
 
 development:
   <<: *default
