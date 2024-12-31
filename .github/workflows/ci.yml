@@ -30,6 +30,7 @@ jobs:
         run: |
           sudo systemctl start mysql
           sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
+          sleep 5 # パスワード変更の反映を待つ
           sudo mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
         env:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
