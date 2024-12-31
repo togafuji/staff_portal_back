@@ -58,6 +58,14 @@ jobs:
       - name: Output database.yml content
         run: cat config/database.yml
 
+      - name: Output docker-compose.yml content
+        run: cat docker-compose.yml
+
+      - name: Inspect containers and networks
+        run: |
+          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Networks}}"
+          docker network ls
+
       - name: Test MySQL connection
         run: |
           host mysql
