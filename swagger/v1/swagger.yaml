@@ -1,0 +1,194 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/v1/bulletin_boards":
+    post:
+      summary: create bulletin_board
+      tags:
+      - BulletinBoards
+      parameters: []
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BulletinBoard"
+        '422':
+          description: unprocessable entity
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                files[]:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: 複数ファイルのアップロード
+              required:
+              - title
+              - content
+    get:
+      summary: list bulletin_boards
+      tags:
+      - BulletinBoards
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/BulletinBoard"
+  "/api/v1/bulletin_boards/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: 掲示板ID
+      required: true
+      schema:
+        type: string
+    - name: bulletin_board
+      in: formData
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+          content:
+            type: string
+          files[]:
+            type: array
+            items:
+              type: string
+              format: binary
+    delete:
+      summary: delete bulletin_board
+      tags:
+      - BulletinBoards
+      responses:
+        '204':
+          description: no content
+        '404':
+          description: not found
+    get:
+      summary: show bulletin_board
+      tags:
+      - BulletinBoards
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BulletinBoard"
+        '404':
+          description: not found
+    patch:
+      summary: update bulletin_board
+      tags:
+      - BulletinBoards
+      responses:
+        '200':
+          description: updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BulletinBoard"
+        '422':
+          description: unprocessable entity
+  "/api/v1/bulletin_boards/{id}/mark_as_read":
+    parameters:
+    - name: id
+      in: path
+      description: 掲示板ID
+      required: true
+      schema:
+        type: string
+    patch:
+      summary: mark bulletin_board as read
+      tags:
+      - BulletinBoards
+      responses:
+        '200':
+          description: marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '422':
+          description: unprocessable entity
+  "/api/v1/login":
+    post:
+      summary: ログイン
+      tags:
+      - Authentication
+      parameters: []
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  username:
+                    type: string
+        '401':
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+              - email
+              - password
+  "/api/v1/logout":
+    delete:
+      summary: ログアウト
+      tags:
+      - Authentication
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: ログアウト成功
+        '401':
+          description: 認証エラー
+servers:
+- url: https://{defaultHost}
+  variables:
+    defaultHost:
+      default: www.example.com
