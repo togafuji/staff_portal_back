@@ -31,22 +31,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
 
-      # MySQL 初期設定
+      # 必要なディレクトリを作成
+      - name: Create MySQL run directory
+        run: |
+          sudo mkdir -p /var/run/mysqld
+          sudo chown mysql:mysql /var/run/mysqld
+
+      # MySQLをセーフモードで起動してrootパスワードをリセット
       - name: Configure MySQL
         run: |
-          # MySQLをセーフモードで起動
           sudo systemctl stop mysql
           sudo mysqld_safe --skip-grant-tables &
           sleep 5
 
-          # rootパスワードをリセット
           mysql -u root -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
 
-          # セーフモードを停止し通常モードで起動
           sudo killall mysqld
           sudo systemctl start mysql
 
-      # テスト用データベースの作成
+      # テスト用データベースを作成
       - name: Create test database
         run: |
           mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
