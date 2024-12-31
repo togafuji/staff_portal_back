@@ -40,10 +40,18 @@ jobs:
 
       - name: Validate Rails Master Key
         run: |
+          echo "Validating RAILS_MASTER_KEY length..."
           if [[ $(echo -n "$RAILS_MASTER_KEY" | wc -c) -ne 32 ]]; then
             echo "Error: RAILS_MASTER_KEY must be 32 characters (16 bytes) long."
             exit 1
           fi
+          echo "RAILS_MASTER_KEY length is valid."
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+
+      - name: Debug - Print RAILS_MASTER_KEY length (for troubleshooting)
+        run: |
+          echo "Debugging: RAILS_MASTER_KEY length is $(echo -n "$RAILS_MASTER_KEY" | wc -c)"
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
 
