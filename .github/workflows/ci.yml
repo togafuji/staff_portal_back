@@ -59,6 +59,9 @@ jobs:
         run: bundle exec rails db:setup
 
       - name: Database setup
+        env:
+           DATABASE_HOST: localhost
+           CI: true
         run: bundle exec rails db:setup
 
       - name: Run tests
