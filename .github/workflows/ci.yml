@@ -45,6 +45,9 @@ jobs:
           sleep 10
           echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
 
+           # MySQLが起動しているか確認
+          sudo mysqladmin ping
+
           # パスワードなしで接続できるか確認
           sudo -u root -E mysql -u root -e "SELECT 1;"
           # パスワードありで接続できるか確認
