@@ -8,7 +8,7 @@ on:
 
 env:
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} # MySQLのパスワードをGitHub Secretsに設定
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
 jobs:
   build-and-test:
