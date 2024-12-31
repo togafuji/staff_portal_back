@@ -40,7 +40,7 @@ jobs:
       # DB作成・マイグレーション（RDBを使う場合）
       - name: Setup DB
         run: |
-          cp config/database.yml.ci config/database.yml  # CI用DB設定ファイルをコピーする例
+          cp config/database.yml
           rails db:create
           rails db:migrate
 
