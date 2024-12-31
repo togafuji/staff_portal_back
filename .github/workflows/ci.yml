@@ -23,9 +23,17 @@ jobs:
       - name: Install MySQL 8.0
         run: |
           sudo apt-get update
-          wget https://dev.mysql.com/get/mysql-apt-config_0.8.28-1_all.deb
-          sudo dpkg -i mysql-apt-config_0.8.28-1_all.deb
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C
+          
+          # リポジトリ設定の削除
+          sudo rm -f /etc/apt/sources.list.d/mysql.list
+          
+          # 署名鍵の追加
+          wget https://repo.mysql.com/RPM-GPG-KEY-mysql-2022 -O mysql.asc
+          sudo apt-key add mysql.asc
+          
+          # リポジトリ設定の手動追加
+          echo "deb https://repo.mysql.com/apt/ubuntu/ jammy mysql-8.0" | sudo tee /etc/apt/sources.list.d/mysql.list
+          
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
 
@@ -46,8 +54,8 @@ jobs:
           sleep 10
 
           # MySQLの初期設定
-           sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
-           sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+          sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
           sleep 10
           echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
 
