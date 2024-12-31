@@ -2,9 +2,9 @@ name: Rails CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 env:
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
@@ -19,39 +19,31 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # Ruby をセットアップ
+      # 必要なパッケージのインストール
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-server mysql-client
+          sudo mkdir -p /opt/homebrew/var/mysql
+          sudo chown mysql:mysql /opt/homebrew/var/mysql
+          sudo systemctl start mysql
+
+      # MySQLの設定とテスト用データベースの作成
+      - name: Configure MySQL
+        run: |
+          sudo systemctl stop mysql
+          sudo mysqld_safe --skip-grant-tables --socket=/opt/homebrew/var/mysql/mysql.sock &
+          sleep 5
+          mysql -u root --socket=/opt/homebrew/var/mysql/mysql.sock -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}';"
+          sudo killall mysqld
+          sudo systemctl start mysql
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
+
+      # Rubyのセットアップ
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1.3
-
-      # MySQL サーバーをセットアップ
-      - name: Install MySQL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-server mysql-client
-          sudo systemctl start mysql
-  
-      - name: Configure MySQL
-        run: |
-          sudo systemctl stop mysql
-          sudo mysqld_safe --skip-grant-tables &
-          sleep 5
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock
-          sudo killall mysqld
-          sudo systemctl start mysql
-
-      - name: Create database
-        run: |
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} --socket=/opt/homebrew/var/mysql/mysql.sock -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
-
-      # キャッシュを活用（bundle installの高速化）
-      - name: Bundle cache
-        uses: actions/cache@v3
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-bundle-
 
       # Bundler & gems のインストール
       - name: Install gems
@@ -59,23 +51,17 @@ jobs:
           gem install bundler
           bundle install
 
-      # DB作成・マイグレーション
-      - name: Create DB
-        env:
-          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@127.0.0.1:3306/staff_portal_back_test"
-        run: bundle exec rails db:create
-
-      - name: Migrate DB
-        env:
-          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@127.0.0.1:3306/staff_portal_back_test"
-        run: bundle exec rails db:migrate
+      # DBの作成・マイグレーション
+      - name: Database setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
 
       # テストの実行
       - name: Run tests
-        env:
-          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@127.0.0.1:3306/staff_portal_back_test"
-        run: bundle exec rails test
+        run: |
+          bundle exec rails test
 
-      # Lint / Style Check
+      # Lint チェック
       - name: RuboCop
         run: bundle exec rubocop
