@@ -25,11 +25,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-server mysql-client
 
-      # MySQLサーバーのセットアップと起動
-      - name: Start MySQL server
+      # MySQLサーバーのセットアップとパスワード設定
+      - name: MySQL setup and start
         run: |
           sudo systemctl start mysql
-          sudo mysqladmin -u root password ${{ secrets.MYSQL_PASSWORD }}
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${{ secrets.MYSQL_PASSWORD }}'; FLUSH PRIVILEGES;"
           mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
 
       # Rubyのセットアップ
