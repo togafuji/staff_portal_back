@@ -2,10 +2,12 @@ require_relative "boot"
 
 require "rails/all"
 
-config.after_initialize do
-  if ENV['CI']
-    puts "Loading ci.rb config through config.after_initialize"
-    require_relative "../config/environments/ci.rb"
+Rails.application.configure do
+  config.after_initialize do
+    if ENV['CI']
+      puts "Loading ci.rb config through config.after_initialize"
+      require_relative "../config/environments/ci.rb"
+    end
   end
 end
 # Require the gems listed in Gemfile, including any gems
