@@ -52,6 +52,12 @@ jobs:
       - name: Output config/database.yml
         run: cat config/database.yml
 
+      - name: Verify MySQL is listening
+        run: nc -zv localhost 3306
+
+      - name: Output environment variables
+        run: env
+
       - name: Database setup
         run: bundle exec rails db:setup
 
