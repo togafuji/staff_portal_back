@@ -8,7 +8,7 @@ on:
 
 env:
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} # 複雑なパスワードをGitHub Secretsに設定してください
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
 jobs:
   build-and-test:
@@ -30,9 +30,13 @@ jobs:
         run: |
           sudo systemctl start mysql
           sleep 10 # MySQL起動完了を待機
-          echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
-          sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH 'mysql_native_password' BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+
+          # MySQLの初期設定
+          sudo mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root'; FLUSH PRIVILEGES;"
+          sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
           sleep 10
+          echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
+
           # パスワードなしで接続できるか確認
           sudo -u root -E mysql -u root -e "SELECT 1;"
           sudo -u root -E mysql -h localhost -u root -p"$MYSQL_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS staff_portal_back_test;"
