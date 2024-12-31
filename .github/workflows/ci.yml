@@ -23,7 +23,7 @@ jobs:
       - name: Install MySQL
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-server mysql-client
+          sudo apt-get install -y mysql-server mysql-client-5.7
 
       # MySQLサーバーの設定と起動
       - name: Start and configure MySQL
@@ -32,22 +32,29 @@ jobs:
           sleep 10 # MySQL起動完了を待機
 
           # MySQL設定ファイルの編集
-          sudo sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
-          sudo sed -i 's/#default-authentication-plugin=mysql_native_password/default-authentication-plugin=mysql_native_password/' /etc/mysql/my.cnf
+          if [ -f /etc/mysql/my.cnf ]; then
+            sudo sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
+            sudo sed -i 's/#default-authentication-plugin=mysql_native_password/default-authentication-plugin=mysql_native_password/' /etc/mysql/my.cnf
+          fi
+
+          # MySQL データディレクトリの初期化
+          sudo systemctl stop mysql
+          sudo rm -rf /var/lib/mysql
+          sudo mysql_install_db --user=mysql --ldata=/var/lib/mysql
 
           # MySQL再起動
-          sudo systemctl restart mysql
+          sudo systemctl start mysql
           sleep 10
 
           # MySQLの初期設定
           sudo mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root'; FLUSH PRIVILEGES;"
           sudo mysql -u root -e "ALTER USER root@'%' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
           sleep 10
           echo "MYSQL_PASSWORD is: $MYSQL_PASSWORD"
 
            # MySQLが起動しているか確認
           sudo mysqladmin ping
-
           # パスワードなしで接続できるか確認
           sudo -u root -E mysql -u root -e "SELECT 1;"
           # パスワードありで接続できるか確認
