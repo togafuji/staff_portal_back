@@ -29,7 +29,7 @@ jobs:
       - name: MySQL setup and start
         run: |
           sudo systemctl start mysql
-          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock${{ secrets.MYSQL_PASSWORD }}
+          mysql -u root -p --socket=/opt/homebrew/var/mysql/mysql.sock -p${{ secrets.MYSQL_PASSWORD }}
 
       # Rubyのセットアップ
       - name: Set up Ruby
