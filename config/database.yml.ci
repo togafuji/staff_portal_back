@@ -5,6 +5,7 @@ default: &default
   username: root
   password: <%= ENV["MYSQL_ROOT_PASSWORD"] %>
   host: localhost
+  socket: /opt/homebrew/var/mysql/mysql.sock
 
 development:
   <<: *default
