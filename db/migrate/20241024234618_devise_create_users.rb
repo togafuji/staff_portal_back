@@ -10,7 +10,7 @@ class DeviseCreateUsers < ActiveRecord::Migration[7.0]
 
   # usersテーブルの作成処理を別メソッドに分ける
   def create_users_table
-    create_table :users, id: false do |t|
+    create_table :users do |t|
       ## Primary Key
       # t.integer :id, null: false, primary_key: true
 
