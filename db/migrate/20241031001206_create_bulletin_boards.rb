@@ -5,7 +5,7 @@ class CreateBulletinBoards < ActiveRecord::Migration[7.0]
   def change
     create_table :bulletin_boards do |t|
       # 外部キー: user_id
-      t.integer :user_id, null: false, foreign_key: true
+      t.bigint :user_id, null: false, foreign_key: true
       # 投稿内容
       t.text :content, null: false
       # 作成日時

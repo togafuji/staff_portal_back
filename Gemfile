@@ -56,3 +56,4 @@ gem 'rswag-api'
 gem 'rswag-ui'
 gem 'rswag-specs'
 gem "rspec-rails", "~> 7.0", :group => :test
+gem 'dotenv-rails', groups: [:development, :test]

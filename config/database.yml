@@ -14,9 +14,11 @@ default: &default
   encoding: utf8mb4
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: root
-  password:
-  host: localhost
-  socket: /opt/homebrew/var/mysql/mysql.sock
+  password: <%= ENV['MYSQL_PASSWORD'] %>
+  host: <%= ENV['DATABASE_HOST'] || "127.0.0.1" %>
+  port: 3306
+  protocol: <%= ENV['DATABASE_PROTOCOL'] || "tcp" %>
+  # socket: /opt/homebrew/var/mysql/mysql.sock  # ソケット接続を使用しない
 
 development:
   <<: *default

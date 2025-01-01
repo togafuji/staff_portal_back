@@ -1,0 +1,83 @@
+name: Rails CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+env:
+  RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+  DATABASE_HOST: 127.0.0.1
+  DATABASE_PROTOCOL: tcp
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: staff_portal_back_development
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.3
+
+      - name: Install gems
+        run: |
+          gem install bundler
+          bundle config set --local without 'development'
+          bundle install
+
+      - name: Validate Rails Master Key
+        run: |
+          echo "Validating RAILS_MASTER_KEY length..."
+          if [[ $(echo -n "$RAILS_MASTER_KEY" | wc -c) -ne 32 ]]; then
+            echo "Error: RAILS_MASTER_KEY must be 32 characters (16 bytes) long."
+            exit 1
+          fi
+          echo "RAILS_MASTER_KEY length is valid."
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            mysqladmin ping -h127.0.0.1 -P3306 -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent && break
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          mysqladmin ping -h127.0.0.1 -P3306 -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent || exit 1
+
+      - name: Database setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+
+      - name: Run tests
+        run: bundle exec rails test
+
+      - name: RuboCop
+        run: bundle exec rubocop
+
+      # 追加のデバッグステップ
+      - name: Check MySQL connection and databases
+        run: |
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "SHOW DATABASES;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -D staff_portal_back_development -e "SHOW TABLES;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -D staff_portal_back_development -e "DESCRIBE user_settings;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -D staff_portal_back_development -e "DESCRIBE users;"
