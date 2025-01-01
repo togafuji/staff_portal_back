@@ -53,20 +53,21 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
-      - name: Build Docker image without cache
-        run: docker-compose build --no-cache
 
       - name: Look for database url
         run:  echo $DATABASE_URL
       - name: Output initializer files
         run:  ls config/initializers && cat config/initializers/*
 
+      - name: Output DATABASE_URL
+        run:  echo $DATABASE_URL
       - name: Build Docker image without cache
         run: docker-compose build --no-cache
       - name: Database setup
         env:
           DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_development"
           CI: true
+          DATABASE_PROTOCOL: tcp
         run: bundle exec rails db:setup
 
       - name: Run tests
