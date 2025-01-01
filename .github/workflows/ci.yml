@@ -63,6 +63,14 @@ jobs:
           done
           mysqladmin ping -h127.0.0.1 -P3306 -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent || exit 1
 
+      # 追加のデバッグステップ
+      - name: Check MySQL connection and databases
+        run: |
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "SHOW DATABASES;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "USE staff_portal_back_development; SHOW TABLES;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "DESCRIBE user_settings;"
+          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "DESCRIBE users;"
+
       - name: Database setup
         run: |
           bundle exec rails db:create
@@ -74,10 +82,3 @@ jobs:
       - name: RuboCop
         run: bundle exec rubocop
 
-      # 追加のデバッグステップ
-      - name: Check MySQL connection and databases
-        run: |
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "SHOW DATABASES;"
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "USE staff_portal_back_development; SHOW TABLES;"
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "DESCRIBE user_settings;"
-          mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -h127.0.0.1 -P3306 -e "DESCRIBE users;"
