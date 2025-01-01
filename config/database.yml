@@ -15,8 +15,10 @@ default: &default
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: root
   password: <%= ENV['MYSQL_PASSWORD'] %>
-  host: localhost
-  socket: /opt/homebrew/var/mysql/mysql.sock
+  host: <%= ENV['DATABASE_HOST'] || "127.0.0.1" %>
+  port: 3306
+  protocol: <%= ENV['DATABASE_PROTOCOL'] || "tcp" %>
+  # socket: /opt/homebrew/var/mysql/mysql.sock  # ソケット接続を使用しない
 
 development:
   <<: *default
