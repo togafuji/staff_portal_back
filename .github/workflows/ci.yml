@@ -9,20 +9,26 @@ on:
 env:
   RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
   MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-
+  DATABASE_HOST: 127.0.0.1
+  DATABASE_PROTOCOL: tcp
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     services:
       mysql:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: staff_portal_back_test
+          MYSQL_DATABASE: staff_portal_back_development
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Check out repository
@@ -39,8 +45,7 @@ jobs:
           bundle config set --local without 'development'
           bundle install
 
-
-      - name: Validate Rails Master Key (after bundle install)  # KEY CHANGE
+      - name: Validate Rails Master Key
         run: |
           echo "Validating RAILS_MASTER_KEY length..."
           if [[ $(echo -n "$RAILS_MASTER_KEY" | wc -c) -ne 32 ]]; then
@@ -49,26 +54,19 @@ jobs:
           fi
           echo "RAILS_MASTER_KEY length is valid."
 
-      - name: Install docker-compose
+      - name: Wait for MySQL to be ready
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+          for i in {1..30}; do
+            mysqladmin ping -h127.0.0.1 -P3306 -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent && break
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          mysqladmin ping -h127.0.0.1 -P3306 -uroot -p${{ secrets.MYSQL_PASSWORD }} --silent || exit 1
 
-      - name: Look for database url
-        run:  echo $DATABASE_URL
-      - name: Output initializer files
-        run:  ls config/initializers && cat config/initializers/*
-
-      - name: Output DATABASE_URL
-        run:  echo $DATABASE_URL
-      - name: Build Docker image without cache
-        run: docker-compose build --no-cache
       - name: Database setup
-        env:
-          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_development?port=3306"
-          CI: true
-          DATABASE_PROTOCOL: tcp
-        run: bundle exec rails db:setup
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
 
       - name: Run tests
         run: bundle exec rails test
