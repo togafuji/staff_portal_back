@@ -65,7 +65,7 @@ jobs:
         run: docker-compose build --no-cache
       - name: Database setup
         env:
-          DATABASE_HOST: localhost
+          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_development"
           CI: true
         run: bundle exec rails db:setup
 
