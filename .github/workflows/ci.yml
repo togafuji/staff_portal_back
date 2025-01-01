@@ -65,7 +65,7 @@ jobs:
         run: docker-compose build --no-cache
       - name: Database setup
         env:
-          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_development"
+          DATABASE_URL: "mysql2://root:${{ secrets.MYSQL_PASSWORD }}@localhost:3306/staff_portal_back_development?port=3306"
           CI: true
           DATABASE_PROTOCOL: tcp
         run: bundle exec rails db:setup
